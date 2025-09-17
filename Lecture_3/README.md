@@ -1,7 +1,39 @@
+# RTOS-course
 
-# Lecture task on RTOS
+An educational project that demonstrates **core real-time operating system (RTOS) concepts** on the ESP32-S3 platform through practical implementation.  
+It showcases multitasking, task scheduling, and resource management in embedded systems, making complex RTOS principles **accessible and tangible**.
 
-A brief description of what this project does and who it's for
+---
+
+## 📖 Overview
+
+**RTOS-course** helps developers and learners gain a clear understanding of RTOS architecture and multitasking capabilities.  
+
+### Why RTOS-course?
+The project demonstrates:
+- 🌱🔋 **Task Management**: Implements a multitasking framework to handle concurrent processes like LED signaling, system monitoring, and CPU load simulation.  
+- 🧠📈 **Real-Time Scheduling**: Shows task prioritization and scheduling to ensure responsive and predictable system behavior.  
+- 💻📊 **System Monitoring**: Provides insights into system memory and CPU load via serial output for diagnostics.  
+- 🌈🔧 **Practical Implementation**: Uses the ESP32-S3 hardware to bridge theory and real-world embedded development.  
+- ⚙️📦 **Modular Architecture**: Facilitates understanding and customization of RTOS components for educational or development purposes.  
+
+---
+
+## ⚡ Installation
+
+Build RTOS-course from the source and install dependencies:
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/edarko265/RTOS-course
+
+cd RTOS-course
+
+Install the dependencies (via Arduino IDE or PlatformIO, depending on your setup).
+
+🛠 Example Code
+
+Below is the demo code that runs three concurrent FreeRTOS tasks on the ESP32-S3 DevKitC-1 v1.1:
 
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
@@ -82,7 +114,7 @@ void setup() {
   strip.clear();
   strip.show();
 
-  // Create tasks (bigger number = higher priority)
+  // Create tasks (higher number = higher priority)
   xTaskCreate(TaskLED,    "TaskLED",    2048, NULL, 3, &hLED);
   xTaskCreate(TaskSerial, "TaskSerial", 3072, NULL, 2, &hSER);
   xTaskCreate(TaskCompute,"TaskCompute",2048, NULL, 1, &hCPU);
@@ -91,3 +123,15 @@ void setup() {
 void loop() {
   // Not used: FreeRTOS scheduler runs our tasks
 }
+
+🎯 Learning Outcomes
+
+By experimenting with this project, you will:
+
+Understand how multitasking is implemented in RTOS.
+
+Learn about task priorities and scheduling policies.
+
+Explore system diagnostics using FreeRTOS APIs.
+
+Gain experience in embedded development with ESP32-S3.
