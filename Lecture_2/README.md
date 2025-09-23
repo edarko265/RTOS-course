@@ -1,7 +1,8 @@
 
 # 🟢🟡🔴 ESP32‑S3 Traffic‑Light LEDs (Wokwi + Hardware)
 
-![Wokwi Simulation](sandbox:/mnt/data/Screenshot 2025-09-23 at 13.58.45.png)
+<img width="1470" height="858" alt="Screenshot 2025-09-23 at 13 57 31" src="https://github.com/user-attachments/assets/9ccf463b-9ea2-428e-a02b-db575d78c79a" />
+
 
 [![Board](https://img.shields.io/badge/board-ESP32--S3--DevKitC--1-0A84C1)](#)
 [![Language](https://img.shields.io/badge/lang-Arduino%20(C%2B%2B)-brightgreen)](#)
