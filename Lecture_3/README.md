@@ -1,40 +1,101 @@
-# RTOS-course
 
-An educational project that demonstrates **core real-time operating system (RTOS) concepts** on the ESP32-S3 platform through practical implementation.  
-It showcases multitasking, task scheduling, and resource management in embedded systems, making complex RTOS principles **accessible and tangible**.
+# ⏱️⚙️ RTOS‑course — ESP32‑S3 FreeRTOS Playground
+
+[![Board](https://img.shields.io/badge/Board-ESP32--S3%20DevKitC--1-0A84C1)](#)
+[![RTOS](https://img.shields.io/badge/RTOS-FreeRTOS-00B3B3)](#)
+[![Language](https://img.shields.io/badge/Language-C/C%2B%2B-informational)](#)
+[![Level](https://img.shields.io/badge/Level-Intermediate-orange)](#)
+[![License](https://img.shields.io/badge/Use-Education-green)](#)
+
+An educational project that makes **core RTOS concepts** tangible on the **ESP32‑S3**.  
+You’ll see **multitasking**, **scheduling**, **resource handling**, and **system diagnostics** in action—
+all with clear, well‑commented code.
 
 ---
 
 ## 📖 Overview
 
-**RTOS-course** helps developers and learners gain a clear understanding of RTOS architecture and multitasking capabilities.  
-
-### Why RTOS-course?
-The project demonstrates:
-- 🌱🔋 **Task Management**: Implements a multitasking framework to handle concurrent processes like LED signaling, system monitoring, and CPU load simulation.  
-- 🧠📈 **Real-Time Scheduling**: Shows task prioritization and scheduling to ensure responsive and predictable system behavior.  
-- 💻📊 **System Monitoring**: Provides insights into system memory and CPU load via serial output for diagnostics.  
-- 🌈🔧 **Practical Implementation**: Uses the ESP32-S3 hardware to bridge theory and real-world embedded development.  
-- ⚙️📦 **Modular Architecture**: Facilitates understanding and customization of RTOS components for educational or development purposes.  
+**RTOS‑course** gives you a practical mental model for RTOS design:
+- 🌱🔋 **Task Management** — concurrent tasks for LED signalling, serial diagnostics, and CPU workload.
+- 🧠📈 **Real‑Time Scheduling** — priorities + fixed‑rate execution using `vTaskDelayUntil()`.
+- 💻📊 **System Monitoring** — heap usage + timestamps via serial for quick feedback.
+- 🌈🔧 **Practical Hardware** — uses the **on‑board RGB LED** (GPIO 38) of the ESP32‑S3 DevKitC‑1 v1.1.
+- ⚙️📦 **Modular Architecture** — clean separation of responsibilities; easy to extend.
 
 ---
 
-## ⚡ Installation
+## 🧪 Demo: Three Concurrent Tasks
 
-Build RTOS-course from the source and install dependencies:
+The project spawns three FreeRTOS tasks with different priorities:
+- **LED** (prio 3) – periodic color changes with deterministic period (400 ms).
+- **Serial** (prio 2) – once per second prints free heap and uptime.
+- **Compute** (prio 1) – low‑priority CPU load to illustrate preemption.
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/edarko265/RTOS-course
+```cpp
+// --- excerpt from main sketch ---
+#include <Arduino.h>
+#include <Adafruit_NeoPixel.h>
 
+#define LED_PIN 38
+#define NUM_LEDS 1
+Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
+
+void TaskLED(void*);
+void TaskSerial(void*);
+void TaskCompute(void*);
+
+void setup() {
+  Serial.begin(9600);
+  strip.begin(); strip.setBrightness(120); strip.clear(); strip.show();
+  xTaskCreate(TaskLED, "LED", 2048, NULL, 3, NULL);
+  xTaskCreate(TaskSerial, "SER", 3072, NULL, 2, NULL);
+  xTaskCreate(TaskCompute, "CPU", 2048, NULL, 1, NULL);
+}
+void loop() {} // scheduler runs our tasks
+```
+
+> The full example with comments is in this README’s **Example Code** section below—ready to paste into Arduino/PlatformIO.
+
+---
+
+## 🚀 Quick Start
+
+### 1) Clone
+```bash
+git clone https://github.com/edarko265/RTOS-course
 cd RTOS-course
+```
 
-Install the dependencies (via Arduino IDE or PlatformIO, depending on your setup).
+### 2) Choose your toolchain
+- 🧰 **Arduino IDE**
+  1. Install **ESP32** board support and the **Adafruit NeoPixel** library.
+  2. Board: **ESP32S3 Dev Module** (or DevKitC‑1 v1.1).
+  3. Paste the example into a new sketch and **Upload**.
 
-🛠 Example Code
+- ⚙️ **PlatformIO**
+  1. Create a new `esp32-s3` project (Arduino framework).
+  2. Add dependency: `adafruit/Adafruit NeoPixel`.
+  3. Put the example into `src/main.cpp` and **Build → Upload**.
 
-Below is the demo code that runs three concurrent FreeRTOS tasks on the ESP32-S3 DevKitC-1 v1.1:
+✅ FreeRTOS is included with the ESP32 Arduino core; no separate install needed.
 
+---
+
+## 🧠 Mapping to RTOS Concepts
+
+| Concept | Where to See It |
+|---|---|
+| **Tasks & Priorities** | `xTaskCreate(..., priority)` for LED/Serial/Compute |
+| **Periodic Scheduling** | `vTaskDelayUntil()` for fixed‑rate tasks (LED/Serial/Compute) |
+| **Preemption** | Higher‑priority LED task preempts lower‑priority compute |
+| **Diagnostics** | `Serial.printf()` + `xPortGetFreeHeapSize()` |
+| **Resource Basics** | (Extend) Add queues/semaphores for ISR → task handoff |
+
+---
+
+## 🛠 Example Code (drop‑in)
+
+```cpp
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 
@@ -43,7 +104,7 @@ Below is the demo code that runs three concurrent FreeRTOS tasks on the ESP32-S3
 #define NUM_LEDS   1
 Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-// Optional: task handles for future diagnostics
+// Optional: task handles for diagnostics
 TaskHandle_t hLED = nullptr, hSER = nullptr, hCPU = nullptr;
 
 // ---------- Task: LED (highest priority) ----------
@@ -61,13 +122,11 @@ void TaskLED(void *pv) {
 
   for (;;) {
     // LED ON for 150 ms
-    strip.setPixelColor(0, colors[i]);
-    strip.show();
+    strip.setPixelColor(0, colors[i]); strip.show();
     vTaskDelay(pdMS_TO_TICKS(150));
 
     // LED OFF until the next period boundary (fixed-rate schedule)
-    strip.setPixelColor(0, 0);
-    strip.show();
+    strip.setPixelColor(0, 0); strip.show();
     vTaskDelayUntil(&last, period);
 
     i = (i + 1) % 4; // R -> G -> B -> Off
@@ -78,7 +137,6 @@ void TaskLED(void *pv) {
 void TaskSerial(void *pv) {
   TickType_t last = xTaskGetTickCount();
   const TickType_t period = pdMS_TO_TICKS(1000);  // 1 s
-
   for (;;) {
     size_t freeHeap = xPortGetFreeHeapSize();
     Serial.printf("[t=%lu ms] freeHeap=%u bytes\n",
@@ -93,9 +151,8 @@ void TaskCompute(void *pv) {
   TickType_t last = xTaskGetTickCount();
   const TickType_t period = pdMS_TO_TICKS(200);   // 200 ms
   volatile uint32_t sink = 0;
-
   for (;;) {
-    // Light CPU load: simple arithmetic loop
+    // Light CPU load
     for (int k = 0; k < 50000; ++k) {
       sink += (k ^ ((k << 1) + (k >> 1)));
     }
@@ -123,15 +180,36 @@ void setup() {
 void loop() {
   // Not used: FreeRTOS scheduler runs our tasks
 }
+```
 
-🎯 Learning Outcomes
+---
 
-By experimenting with this project, you will:
+## 🔧 Configure & Extend
 
-Understand how multitasking is implemented in RTOS.
+- **LED Pin**: Using on‑board RGB on **GPIO 38**. Change `LED_PIN` if you use an external LED strip.
+- **Priorities**: Tune task priorities to explore preemption and starvation.
+- **Tick Rate**: Adjust `configTICK_RATE_HZ` in `FreeRTOSConfig.h` to study jitter and CPU load.
+- **Next Steps**: Add a timer ISR that posts to a **queue**; have a worker task consume messages.
 
-Learn about task priorities and scheduling policies.
+---
 
-Explore system diagnostics using FreeRTOS APIs.
+## 🩺 Troubleshooting
 
-Gain experience in embedded development with ESP32-S3.
+- **Nothing prints** → Check **Port/COM** setting and baud (9600).  
+- **LED doesn’t change** → Confirm board is **DevKitC‑1 v1.1** (RGB on GPIO 38) and library installed.  
+- **Guru Meditation/Reset** → Increase task stack sizes; remove `delay()` inside tasks; prefer `vTaskDelayUntil()`.
+
+---
+
+## 🎯 Learning Outcomes
+
+- Implement multitasking with FreeRTOS tasks and priorities.  
+- Apply periodic scheduling with bounded latency.  
+- Use diagnostics (heap/time) to reason about system behavior.  
+- Gain confidence building embedded apps on ESP32‑S3.
+
+---
+
+## 📄 License
+
+Educational use permitted. Please credit this project when re‑using in coursework or tutorials.
